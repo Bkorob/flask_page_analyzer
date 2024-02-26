@@ -15,4 +15,4 @@ jobs:
           make install
       - name: Run linter & tests
         run: |
-          make check
+          make lint
