@@ -12,7 +12,7 @@ jobs:
       - name: Set up Python 
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10.4'
+          python-version: '3.x'
       - name: Install dependencies
         run: |
           pip install poetry
@@ -26,4 +26,4 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
           coverageCommand: make test-coverage
-          debug: true
+          debug: true 
