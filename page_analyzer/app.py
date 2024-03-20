@@ -24,10 +24,11 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 def get_conn():
     return psycopg2.connect(DATABASE_URL)
 
+
 @app.get('/')
 def hello_world():
     return render_template(
-        'index.html', 
+        'index.html',
         messages=get_flashed_messages(with_categories=True),
         url={},
     )
@@ -41,11 +42,11 @@ def add_url():
         flash('неверный формат URL', 'error')
         return render_template(
             'index.html',
-            url= adress_dict,
+            url=adress_dict,
             messages=get_flashed_messages(with_categories=True),
-        ), 422
+        )
     normalize_adress = urlparse(adress)
-    conn = get_conn()   
+    conn = get_conn()
     with conn.cursor() as cur:
         cur.execute(
             '''INSERT INTO urls (name, created_at)
@@ -57,7 +58,7 @@ def add_url():
             (normalize_adress),
         )
         flash('URL успешно добавлен', 'succes')
-        id = curs.fetchone()['id']
+        id = cur.fetchone()['id']
         return redirect(url_for('show_url', id=id))
 
 
