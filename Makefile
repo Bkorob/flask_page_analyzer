@@ -14,7 +14,7 @@ package-uninstall:
 	python3 -m pip uninstall --yes dist/*.whl
 
 dev:
-	poetry run flask --app page_analyzer:app --debug run
+	poetry run flask --app page_analyzer:app --debug run --port 7676
 
 PORT ?= 8000
 start:

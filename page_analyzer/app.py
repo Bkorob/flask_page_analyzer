@@ -43,41 +43,50 @@ def add_url():
         return render_template(
             'index.html',
             url=adress_dict,
-            messages=get_flashed_messages(with_categories=True),
+            messages=get_flashed_messages(),
         )
-    normalize_adress = urlparse(adress)
-    conn = get_conn()
-    with conn.cursor() as cur:
-        cur.execute(
-            '''INSERT INTO urls (name, created_at)
-            VALUES (%s, %s); ''',
-            (normalize_adress, datetime.now()),
-        )
-        cur.execute(
-            '''SELECT id FROM urls WHERE name = (%s);''',
-            (normalize_adress),
-        )
-        flash('URL успешно добавлен', 'succes')
-        id = cur.fetchone()['id']
-        return redirect(url_for('show_url', id=id))
+    prev_adress = urlparse(adress)
+    normalize_adress = prev_adress.netloc
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                '''INSERT INTO urls (name, created_at)
+                VALUES (%s, %s) RETURNING id;''',
+                (normalize_adress, datetime.now()),
+            )
+            flash('URL успешно добавлен', 'succes')
+            id = cur.fetchone()[0]
+            return redirect(url_for('show_url', id=id))
 
 
 @app.route('/urls/<id>')
 def show_url(id):
-    conn = get_conn()
-    with conn.cursor() as cur:
-        cur.execute(
-            '''SELECT * FROM urls WHERE id = (%s);''',
-            (id),
-        )
-        url = cur.fetchall()
-        return render_template(
-            'urls.html',
-            messages=get_flashed_messages(with_categories=True),
-            url=url,
-        )
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                '''SELECT * FROM urls WHERE id = (%s);''',
+                (id),
+            )
+            url = cur.fetchall()
+            return render_template(
+                'urls.html',
+                messages=get_flashed_messages(),
+                url=url,
+            )
 
 
 @app.get('/urls')
 def show_urls():
-    pass
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                '''
+                SELECT * FROM urls 
+                ORDER BY created_at DESC;
+                '''
+            )
+            urls = cur.fetchall()
+            return render_template(
+                'urls.html',
+                urls = urls
+            )

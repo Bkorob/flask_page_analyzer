@@ -36,6 +36,7 @@
       <div class="table-responsive">
         <table class="table table-bordered table-hover text-nowrap" data-test="url">
           <tbody>
+            {% for url in urls %}
             <tr>
               <td>Индефикатор</td>
               <td>'{{ url.id }}'</td>
@@ -48,6 +49,7 @@
               <td>Дата создания</td>
               <td>'{{ url.created_at }}'</td>
             </tr>
+            {% endfor %}
           </tbody>
         </table>
       </div>
