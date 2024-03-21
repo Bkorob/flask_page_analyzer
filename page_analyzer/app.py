@@ -10,9 +10,10 @@ from flask import (
 from dotenv import load_dotenv
 from urllib.parse import urlparse
 from validators.url import url as url_check
+from datetime import datetime
+from psycopg2.extras import RealDictCursor
 import os
 import psycopg2
-from datetime import datetime
 
 
 load_dotenv()
@@ -29,60 +30,60 @@ def get_conn():
 def hello_world():
     return render_template(
         'index.html',
-        messages=get_flashed_messages(),
-        url={},
+        messages=get_flashed_messages(with_categories=True),
+        url='',
     )
 
 
+# обработка формы создающей новую запись в таблице urls
 @app.post('/urls')
 def add_url():
     adress_dict = request.form.to_dict()
     adress = adress_dict.get('url')
     if not url_check(adress):
-        flash(' Hеверный формат URL')
+        flash(' Hеверный формат URL', 'danger')
         return render_template(
             'index.html',
-            url=adress_dict,
-            messages=get_flashed_messages(),
+            url=adress,
+            messages=get_flashed_messages(with_categories=True),
         )
     prev_adress = urlparse(adress)
-    normalize_url = prev_adress.netloc
+    normalize_url = f'{prev_adress.scheme}://{prev_adress.netloc}'
     try:
         with get_conn() as conn:
-            with conn.cursor() as cur:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(
                     '''INSERT INTO urls (name, created_at)
-                    VALUES (%s, %s) RETURNING id;''',
-                    (normalize_url, datetime.now()),
+                    VALUES (%s, %s) RETURNING id''',
+                    (normalize_url, datetime.now(),),
                 )
-                flash('URL успешно добавлен')
-                id = cur.fetchone()[0]
+                flash(' URL успешно добавлен', 'success')
+                id = cur.fetchone()['id']
                 return redirect(url_for('show_url', id=id))
     except psycopg2.errors.UniqueViolation:
         with get_conn() as conn:
-            with conn.cursor() as curs:
+            with conn.cursor(cursor_factory=RealDictCursor) as curs:
                 curs.execute(
-                    '''SELECT id FROM urls 
-                    WHERE name=(%s);''', 
+                    '''SELECT id FROM urls
+                    WHERE name = %s''',
                     (normalize_url,))
-                flash('такой URL уже существует')
-                id = curs.fetchone()[0]
+                flash(' Такой URL уже существует', 'secondary')
+                id = curs.fetchone()['id']
                 return redirect(url_for('show_url', id=id))
 
 
-
-@app.route('/urls/<id>')
+@app.route('/urls/<int:id>')
 def show_url(id):
     with get_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(
-                '''SELECT * FROM urls WHERE id = (%s);''',
+                '''SELECT * FROM urls WHERE id = %s''',
                 (id,),
             )
-            url = cur.fetchall()
+            url = cur.fetchone()
             return render_template(
                 'url.html',
-                messages=get_flashed_messages(),
+                messages=get_flashed_messages(with_categories=True),
                 url=url,
             )
 
@@ -90,15 +91,13 @@ def show_url(id):
 @app.get('/urls')
 def show_urls():
     with get_conn() as conn:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(
-                '''
-                SELECT * FROM urls 
-                ORDER BY created_at DESC;
-                '''
+                '''SELECT * FROM urls
+                ORDER BY created_at DESC'''
             )
             urls = cur.fetchall()
             return render_template(
                 'urls.html',
-                urls = urls,
+                urls=urls,
             )
