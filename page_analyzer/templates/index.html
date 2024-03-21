@@ -37,6 +37,12 @@
     <input type="text" name="url" placeholder="Введите проверяемый сайт"value=""  class="form-control form-control-lg" required>
     <input type="submit" class="btn btn-primary  btn-lg ms-3 px-5 text-uppercase mx-3" value="Проверить">
 </form>
+<div>
+  {% if messages %}
+   {% for message in messages %}
+   {% endfor %}
+  {% endif %}
+</div>
   </div>
 </div>
 

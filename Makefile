@@ -2,7 +2,7 @@ install:
 	poetry install
 
 build:
-	poetry build
+	./build.sh
 
 package-install:
 	python3 -m pip install --user dist/*.whl
@@ -23,4 +23,4 @@ start:
 lint:
 	poetry run flake8 page_analyzer
 
-.PHONY: install build publish
+.PHONY: install build

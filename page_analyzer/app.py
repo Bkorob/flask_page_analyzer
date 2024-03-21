@@ -71,9 +71,13 @@ def show_url(id):
             (id),
         )
         url = cur.fetchall()
-        message = get_flashed_messages(with_categories=True)
         return render_template(
             'urls.html',
-            message=message,
+            messages=get_flashed_messages(with_categories=True),
             url=url,
         )
+
+
+@app.get('/urls')
+def show_urls():
+    pass
