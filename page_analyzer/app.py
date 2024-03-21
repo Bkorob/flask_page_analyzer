@@ -29,7 +29,7 @@ def get_conn():
 def hello_world():
     return render_template(
         'index.html',
-        messages=get_flashed_messages(with_categories=True),
+        messages=get_flashed_messages(),
         url={},
     )
 
@@ -39,24 +39,36 @@ def add_url():
     adress_dict = request.form.to_dict()
     adress = adress_dict.get('url')
     if not url_check(adress):
-        flash('неверный формат URL', 'error')
+        flash(' Hеверный формат URL')
         return render_template(
             'index.html',
             url=adress_dict,
             messages=get_flashed_messages(),
         )
     prev_adress = urlparse(adress)
-    normalize_adress = prev_adress.netloc
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                '''INSERT INTO urls (name, created_at)
-                VALUES (%s, %s) RETURNING id;''',
-                (normalize_adress, datetime.now()),
-            )
-            flash('URL успешно добавлен', 'succes')
-            id = cur.fetchone()[0]
-            return redirect(url_for('show_url', id=id))
+    normalize_url = prev_adress.netloc
+    try:
+        with get_conn() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    '''INSERT INTO urls (name, created_at)
+                    VALUES (%s, %s) RETURNING id;''',
+                    (normalize_url, datetime.now()),
+                )
+                flash('URL успешно добавлен')
+                id = cur.fetchone()[0]
+                return redirect(url_for('show_url', id=id))
+    except psycopg2.errors.UniqueViolation:
+        with get_conn() as conn:
+            with conn.cursor() as curs:
+                curs.execute(
+                    '''SELECT id FROM urls 
+                    WHERE name=(%s);''', 
+                    (normalize_url,))
+                flash('такой URL уже существует')
+                id = curs.fetchone()[0]
+                return redirect(url_for('show_url', id=id))
+
 
 
 @app.route('/urls/<id>')
@@ -65,11 +77,11 @@ def show_url(id):
         with conn.cursor() as cur:
             cur.execute(
                 '''SELECT * FROM urls WHERE id = (%s);''',
-                (id),
+                (id,),
             )
             url = cur.fetchall()
             return render_template(
-                'urls.html',
+                'url.html',
                 messages=get_flashed_messages(),
                 url=url,
             )
@@ -88,5 +100,5 @@ def show_urls():
             urls = cur.fetchall()
             return render_template(
                 'urls.html',
-                urls = urls
+                urls = urls,
             )
