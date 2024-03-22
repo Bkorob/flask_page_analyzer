@@ -81,10 +81,18 @@ def show_url(id):
                 (id,),
             )
             url = cur.fetchone()
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                '''SELECT * FROM url_checks WHERE url_id = %s''',
+                (id,),
+            )
+            check = cur.fetchall()
             return render_template(
                 'url.html',
                 messages=get_flashed_messages(with_categories=True),
                 url=url,
+                checks=check,
             )
 
 
@@ -92,12 +100,29 @@ def show_url(id):
 def show_urls():
     with get_conn() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(
-                '''SELECT * FROM urls
-                ORDER BY created_at DESC'''
-            )
-            urls = cur.fetchall()
+            cur.execute('''
+                    SELECT distinct on (urls.id)
+                    urls.id,
+                    urls.name,
+                    url_checks.created_at,
+                    url_checks.status_code
+                    FROM urls LEFT JOIN url_checks
+                    ON urls.id=url_checks.url_id
+                    ORDER BY urls.id DESC
+                    ''')
+            checks = cur.fetchall()
             return render_template(
                 'urls.html',
-                urls=urls,
+                checks=checks,
             )
+
+
+@app.post('/urls/<int:id>/checks')
+def get_check(id):
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(
+                '''INSERT INTO url_checks (url_id, created_at)
+                VALUES (%s, %s)''', (id, datetime.now(),),)
+            flash('Страница успешно проверена', 'success')
+            return redirect(url_for('show_url', id=id))
