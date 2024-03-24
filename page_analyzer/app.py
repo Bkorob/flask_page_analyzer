@@ -12,6 +12,8 @@ from urllib.parse import urlparse
 from validators.url import url as url_check
 from datetime import datetime
 from psycopg2.extras import RealDictCursor
+from .url_check import get_url_check
+from requests import RequestException
 import os
 import psycopg2
 
@@ -122,7 +124,23 @@ def get_check(id):
     with get_conn() as conn:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(
-                '''INSERT INTO url_checks (url_id, created_at)
-                VALUES (%s, %s)''', (id, datetime.now(),),)
-            flash('Страница успешно проверена', 'success')
-            return redirect(url_for('show_url', id=id))
+                '''SELECT name FROM urls WHERE id = %s''',
+                (id,),
+            )
+            url_name = cur.fetchone()['name']
+            try:
+                url_data = get_url_check(url_name)
+                with get_conn() as conn:
+                    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                        cur.execute(
+                            '''INSERT INTO url_checks (
+                                url_id,
+                                created_at,
+                                status_code,
+                            ) VALUES (%s, %s, %s,)''',
+                            (id, datetime.now(), url_data['status_code'],),)
+                        flash('Страница успешно проверена', 'success')
+                        return redirect(url_for('show_url', id=id,))
+            except RequestException:
+                flash('Произошла ошибка проверки', 'danger')
+                return redirect(url_for('show_url', id=id))
