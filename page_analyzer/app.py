@@ -110,7 +110,6 @@ def show_urls():
                     url_checks.status_code
                     FROM urls LEFT JOIN url_checks
                     ON urls.id=url_checks.url_id
-                    ORDER BY urls.id DESC
                     ''')
             checks = cur.fetchall()
             return render_template(
@@ -136,11 +135,20 @@ def get_check(id):
                             '''INSERT INTO url_checks (
                                 url_id,
                                 status_code,
+                                h1,
+                                title,
+                                description,
                                 created_at
-                            ) VALUES (%s, %s, %s)''',
-                            (id, url_data['status_code'], datetime.now(),),)
+                            ) VALUES (%s, %s, %s, %s, %s, %s)''',
+                            (id,
+                             url_data['status_code'],
+                             url_data['h1'],
+                             url_data['title'],
+                             url_data['description'],
+                             datetime.now(),),)
                         flash('Страница успешно проверена', 'success')
                         return redirect(url_for('show_url', id=id,))
+
             except RequestException:
                 flash('Произошла ошибка проверки', 'danger')
                 return redirect(url_for('show_url', id=id,))
