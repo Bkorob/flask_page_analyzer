@@ -43,7 +43,7 @@ def add_url():
     adress_dict = request.form.to_dict()
     adress = adress_dict.get('url')
     if not url_check(adress):
-        flash(' Hеверный формат URL', 'danger')
+        flash('Некорректный URL', 'danger')
         return render_template(
             'index.html',
             url=adress,
@@ -59,7 +59,7 @@ def add_url():
                     VALUES (%s, %s) RETURNING id''',
                     (normalize_url, datetime.now(),),
                 )
-                flash(' URL успешно добавлен', 'success')
+                flash('Страница успешно добавлена', 'success')
                 id = cur.fetchone()['id']
                 return redirect(url_for('show_url', id=id))
     except psycopg2.errors.UniqueViolation:
@@ -69,7 +69,7 @@ def add_url():
                     '''SELECT id FROM urls
                     WHERE name = %s''',
                     (normalize_url,))
-                flash(' Такой URL уже существует', 'secondary')
+                flash('Страница уже существует', 'secondary')
                 id = curs.fetchone()['id']
                 return redirect(url_for('show_url', id=id))
 
@@ -150,5 +150,5 @@ def get_check(id):
                         return redirect(url_for('show_url', id=id,))
 
             except RequestException:
-                flash('Произошла ошибка проверки', 'danger')
+                flash('Произошла ошибка при проверке', 'danger')
                 return redirect(url_for('show_url', id=id,))
