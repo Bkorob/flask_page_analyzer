@@ -1,6 +1,5 @@
-from requests import RequestException
-import requests
 from bs4 import BeautifulSoup
+import requests
 
 
 def get_url_check(url):
