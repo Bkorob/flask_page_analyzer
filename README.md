@@ -8,5 +8,5 @@
 ***Page Analyzer(Анализатор страниц) – это сайт, который анализирует указанные страницы на SEO-пригодность  по аналогии с PageSpeed ​​Insights.***
 
 Установка:
-```git clone git@github.com:Bkorob/python-project-83.git```
+```git clone git@github.com:Bkorob/python-project-83.git```\
 ```make build```
