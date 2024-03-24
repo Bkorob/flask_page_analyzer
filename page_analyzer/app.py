@@ -48,7 +48,7 @@ def add_url():
             'index.html',
             url=adress,
             messages=get_flashed_messages(with_categories=True),
-        )
+        ), 422
     prev_adress = urlparse(adress)
     normalize_url = f'{prev_adress.scheme}://{prev_adress.netloc}'
     try:
