@@ -53,12 +53,12 @@
           <td>
             <a href="{{ url_for('show_url', id=check.id) }}">{{ check.name }}
           </td>
-          
-          <td>{{ check.created_at }}</td>
-          
-          
-          <td></td>
-          
+          {% if check.created_at %}
+          <td>{{ check.created_at.strftime('%Y-%m-%d') }}</td>
+          {% endif %}
+          {% if check.status_code %}
+          <td>{{ check.status_code }}</td>
+          {% endif %}
         </tr>
      {% endfor %}
      {% endif %}
