@@ -135,12 +135,12 @@ def get_check(id):
                         cur.execute(
                             '''INSERT INTO url_checks (
                                 url_id,
-                                created_at,
                                 status_code,
-                            ) VALUES (%s, %s, %s,)''',
-                            (id, datetime.now(), url_data['status_code'],),)
+                                created_at
+                            ) VALUES (%s, %s, %s)''',
+                            (id, url_data['status_code'], datetime.now(),),)
                         flash('Страница успешно проверена', 'success')
                         return redirect(url_for('show_url', id=id,))
             except RequestException:
                 flash('Произошла ошибка проверки', 'danger')
-                return redirect(url_for('show_url', id=id))
+                return redirect(url_for('show_url', id=id,))
