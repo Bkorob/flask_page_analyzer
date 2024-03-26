@@ -12,8 +12,9 @@ from urllib.parse import urlparse
 from validators.url import url as url_check
 from datetime import datetime
 from psycopg2.extras import RealDictCursor
-from .url_check import get_url_check
+from .url_check import get_url_check, get_normalize_url
 from requests import RequestException
+from . import db_connector
 import os
 import psycopg2
 
@@ -29,7 +30,7 @@ def get_conn():
 
 
 @app.get('/')
-def hello_world():
+def get_start():
     return render_template(
         'index.html',
         messages=get_flashed_messages(with_categories=True),
@@ -49,29 +50,30 @@ def add_url():
             url=adress,
             messages=get_flashed_messages(with_categories=True),
         ), 422
-    prev_adress = urlparse(adress)
-    normalize_url = f'{prev_adress.scheme}://{prev_adress.netloc}'
+    normalize_url = get_normalize_url(adress)
     try:
-        with get_conn() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as cur:
-                cur.execute(
-                    '''INSERT INTO urls (name, created_at)
-                    VALUES (%s, %s) RETURNING id''',
-                    (normalize_url, datetime.now(),),
-                )
-                flash('Страница успешно добавлена', 'success')
-                id = cur.fetchone()['id']
-                return redirect(url_for('show_url', id=id))
+        # with get_conn() as conn:
+        #     with conn.cursor(cursor_factory=RealDictCursor) as cur:
+        #         cur.execute(
+        #             '''INSERT INTO urls (name, created_at)
+        #             VALUES (%s, %s) RETURNING id''',
+        #             (normalize_url, datetime.now(),),
+        #         )
+        db_connector.add_url_data(normalize_url)
+        flash('Страница успешно добавлена', 'success')
+        id = db_connector.get_url_id(normalize_url)
+        return redirect(url_for('show_url', id=id))
     except psycopg2.errors.UniqueViolation:
-        with get_conn() as conn:
-            with conn.cursor(cursor_factory=RealDictCursor) as curs:
-                curs.execute(
-                    '''SELECT id FROM urls
-                    WHERE name = %s''',
-                    (normalize_url,))
-                flash('Страница уже существует', 'secondary')
-                id = curs.fetchone()['id']
-                return redirect(url_for('show_url', id=id))
+        # with get_conn() as conn:
+        #     with conn.cursor(cursor_factory=RealDictCursor) as curs:
+        #         curs.execute(
+        #             '''SELECT id FROM urls
+        #             WHERE name = %s''',
+        #             (normalize_url,))
+        #         flash('Страница уже существует', 'secondary')
+        #         id = curs.fetchone()['id']
+        id = db_connector.get_url_id(normalize_url)
+        return redirect(url_for('show_url', id=id))
 
 
 @app.route('/urls/<int:id>')

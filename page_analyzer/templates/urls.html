@@ -47,7 +47,7 @@
     </thead>
     <tbody>
       {% if checks %}
-      {% for check in checks %}
+      {% for check in checks[::-1] %}
         <tr>
           <td>{{ check.id }}</td>
           <td>
