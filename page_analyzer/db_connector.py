@@ -38,7 +38,7 @@ def get_url_id(url, conn=CONN):
             (url,))
         id = cur.fetchone()['id']
         result['flash'] = ['Страница успешно добавлена', 'success']
-        result['id'] = cur.fetchone()['id']
+        result['id'] = id
         conn.commit()
         return result
 
