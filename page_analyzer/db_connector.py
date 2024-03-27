@@ -11,35 +11,24 @@ CONN = psycopg2.connect(DATABASE_URL)
 
 
 def add_url_data(url, conn=CONN):
-    try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(
-                '''INSERT INTO urls (name, created_at)
-                VALUES (%s, %s)''',
-                (url, datetime.now(),),
-            )
+    with conn.cursor() as cur:
+        cur.execute(
+            '''INSERT INTO urls (name, created_at)
+            VALUES (%s, %s) RETURNING id''',
+            (url, datetime.now(),),
+        )
+        id = cur.fetchone()
         conn.commit()
-        result = get_url_id(url)
-        return result  
-    except psycopg2.errors.UniqueViolation:
-        result = get_url_id(url)
-        result['id'] = cur.fetchone()['id']
-        result['flash'] = ['Страница уже существует', 'secondary']
-        return result
+        return id
         
-print(add_url_data('https://jsiqoo.com'))
 
 def get_url_id(url, conn=CONN):
-    result = {}
-    with conn.cursor(cursor_factory=RealDictCursor) as cur:
+    with conn.cursor() as cur:
         cur.execute(
             '''SELECT id FROM urls
             WHERE name = %s''',
             (url,))
-        id = cur.fetchone()['id']
-        result['flash'] = ['Страница успешно добавлена', 'success']
-        result['id'] = id
-        conn.commit()
+        result = cur.fetchone()
         return result
 
 

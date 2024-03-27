@@ -43,10 +43,13 @@ def add_url():
             messages=get_flashed_messages(with_categories=True),
         ), 422
     normalize_url = url_check.get_normalize_url(adress)
-    id = db_connector.add_url_data(normalize_url)['id']
-    message = db_connector.add_url_data(normalize_url)['flash']
-    flash(message[0], message[1])
-    return redirect(url_for('show_url', id=id))
+    id = db_connector.get_url_id(normalize_url)
+    if id:
+        flash('Страница уже существует', 'secondary')
+        return redirect(url_for('show_url', id=id[0],))
+    id = db_connector.add_url_data(normalize_url)
+    flash('Страница успешно добавлена', 'success')
+    return redirect(url_for('show_url', id=id[0],))
 
 
 @app.route('/urls/<int:id>')
