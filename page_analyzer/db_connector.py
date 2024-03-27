@@ -20,7 +20,7 @@ def add_url_data(url, conn=CONN):
         id = cur.fetchone()
         conn.commit()
         return id
-        
+
 
 def get_url_id(url, conn=CONN):
     with conn.cursor() as cur:
@@ -91,4 +91,3 @@ def get_all_urls_data(conn=CONN):
         result_dict = cur.fetchall()
         conn.commit()
         return result_dict
-            
