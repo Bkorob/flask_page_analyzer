@@ -19,7 +19,8 @@ def add_url_data(url, conn=CONN):
         )
         id = cur.fetchone()
         conn.commit()
-        return id
+    conn.close()    
+    return id
 
 
 def get_url_id(url, conn=CONN):
@@ -29,7 +30,8 @@ def get_url_id(url, conn=CONN):
             WHERE name = %s''',
             (url,))
         result = cur.fetchone()
-        return result
+    conn.close()
+    return result
 
 
 def get_url_data(id, conn=CONN):
@@ -40,7 +42,8 @@ def get_url_data(id, conn=CONN):
         )
         url_data = cur.fetchone()
         conn.commit()
-        return url_data
+    conn.close()    
+    return url_data
 
 
 def get_check_data(id, conn=CONN):
@@ -51,7 +54,8 @@ def get_check_data(id, conn=CONN):
         )
         check_data = cur.fetchall()
         conn.commit()
-        return check_data
+    conn.close()
+    return check_data
 
 
 def add_check_data(id, url_data, conn=CONN):
@@ -75,7 +79,8 @@ def add_check_data(id, url_data, conn=CONN):
                     %(created_at)s)''',
             (url_data),)
         conn.commit()
-        return
+    conn.close()
+    return
 
 
 def get_all_urls_data(conn=CONN):
@@ -91,4 +96,5 @@ def get_all_urls_data(conn=CONN):
                     ''')
         result_dict = cur.fetchall()
         conn.commit()
-        return result_dict
+    conn.close()
+    return result_dict
