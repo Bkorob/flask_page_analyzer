@@ -79,7 +79,7 @@ def add_check_data(id, url_data, conn=CONN):
                     %(created_at)s)''',
             (url_data),)
         conn.commit()
-    conn.close()
+        cur.close()
     return
 
 
