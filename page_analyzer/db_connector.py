@@ -74,7 +74,8 @@ def add_check_data(id, url_data, conn=CONN):
                     %(description)s,
                     %(created_at)s)''',
             (url_data),)
-        conn.close()
+        conn.commit()
+        return
 
 
 def get_all_urls_data(conn=CONN):
