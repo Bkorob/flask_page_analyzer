@@ -12,15 +12,19 @@ from validators.url import url
 from requests import RequestException
 from . import url_check
 from . import db_connector
-import psycopg2
 import os
+import psycopg2
 
 
 load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
-get_connect = psycopg2.connect(DATABASE_URL)
+
+
+def get_connect():
+    conn = psycopg2.connect(DATABASE_URL)
+    return conn
 
 
 @app.get('/')
