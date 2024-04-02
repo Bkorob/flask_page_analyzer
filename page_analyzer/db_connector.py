@@ -80,4 +80,5 @@ def get_all_urls_data(conn):
                     ON urls.id=url_checks.url_id
                     ''')
         result_dict = cur.fetchall()
+        conn.commit()
         return result_dict
