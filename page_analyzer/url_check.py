@@ -11,12 +11,12 @@ def get_normalize_url(url):
 def get_url_check(url):
     response = requests.get(url)
     response.raise_for_status()
-    result_dict = get_parse_dict(response)
+    result_dict = get_parse_response(response)
     result_dict['status_code'] = response.status_code
     return result_dict
 
 
-def get_parse_dict(response):
+def get_parse_response(response):
     result = {}
     soup = BeautifulSoup(response.text, 'html.parser')
     title = soup.find('title')
