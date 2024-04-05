@@ -17,11 +17,11 @@ def get_url_check(url):
 
 
 def get_parse_object(page):
-    soup = BeautifulSoup(response.text, 'html.parser')
+    soup = BeautifulSoup(page.text, 'html.parser')
     return get_parse_response(soup)
 
 
-def get_parse_response(response):
+def get_parse_response(soup):
     result = {}
     title = soup.find('title')
     result['title'] = title.get_text() if title else ''
